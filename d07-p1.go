@@ -4,75 +4,42 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"strings"
+	"sort"
 )
 
-type Step struct {
-	Before string
-	Step   string
-}
-
-func appendIfUniq(inputArray []string, inputValue string) []string {
-	for _, value := range inputArray {
-		if value == inputValue {
-			return inputArray
-		}
-	}
-	return append(inputArray, inputValue)
-}
-
-func indexOf(element string, data []string) int {
-	for key, value := range data {
-		if value == element {
-			return key
-		}
-	}
-	return -1
-}
-
 func main() {
-	// open file
-	file, err := os.Open("d07-input-sub.txt")
-	if err != nil {
-		panic(err)
-	}
-
-	// array for all steps
-	var steps []Step
-	var characters []string
-
-	// get steps and save in array
+	file, _ := os.Open("d07-input.txt")
 	scanner := bufio.NewScanner(file)
+
+	steps := make(map[string][]string, 26)
 	for scanner.Scan() {
-		var step Step
-		step.Before = scanner.Text()[5:6]
-		step.Step = scanner.Text()[36:37]
-		steps = append(steps, step)
-		characters = appendIfUniq(characters, step.Before)
-		characters = appendIfUniq(characters, step.Step)
+		steps[scanner.Text()[36:37]] = append(steps[scanner.Text()[36:37]], scanner.Text()[5:6])
+		_, keyExists := steps[scanner.Text()[5:6]]
+		if !keyExists {
+			steps[scanner.Text()[5:6]] = []string{}
+		}
 	}
 
-	done := false
+	for len(steps) > 0 {
+		var possible []string
+		for step, deps := range steps {
+			if len(deps) == 0 {
+				possible = append(possible, step)
+			}
+		}
 
-	for !done {
-		done = true
-		for _, step := range steps {
-			position := indexOf(step.Step, characters)
-			for checkPosition := position; checkPosition > 0; checkPosition-- {
-				if characters[checkPosition] == step.Before {
-					fmt.Printf("move %s before %s\n", characters[checkPosition], characters[position])
-					var newCharacters []string
-					newCharacters = append(newCharacters, characters[:checkPosition]...)
-					newCharacters = append(newCharacters, characters[checkPosition+1:position]...)
-					newCharacters = append(newCharacters, characters[checkPosition])
-					newCharacters = append(newCharacters, characters[position:]...)
-					fmt.Println(characters)
-					fmt.Println(newCharacters)
-					fmt.Println()
-					characters = newCharacters
+		sort.Strings(possible)
+		step := possible[0]
+
+		delete(steps, step)
+		for char, depends := range steps {
+			for k, v := range depends {
+				if v == step {
+					steps[char] = append(steps[char][:k], steps[char][k+1:]...)
 				}
 			}
 		}
+		fmt.Printf("%s", step)
 	}
-	fmt.Println(strings.Join(characters, ""))
+	fmt.Println()
 }
