@@ -44,7 +44,7 @@ func main() {
 		if strings.HasPrefix(line[19:], "wakes up") && sleepSince >= 0 {
 			now, _ := strconv.Atoi(line[15:17])
 			currentGuardMinutes := guards[currentGuard]
-			for i := sleepSince; i <= now; i++ {
+			for i := sleepSince; i < now; i++ {
 				currentGuardMinutes[i]++
 			}
 			guards[currentGuard] = currentGuardMinutes
