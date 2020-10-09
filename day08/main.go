@@ -8,12 +8,12 @@ import (
 	"strings"
 )
 
-func getMetadataSum(data []int) (int, int) {
+func getMetadataSumPart1(data []int) (int, int) {
 	var sum int
 	var offset int
 	offset += 2
 	for i := 0; i < data[0]; i++ {
-		childSum, length := getMetadataSum(data[offset:])
+		childSum, length := getMetadataSumPart1(data[offset:])
 		sum += childSum
 		offset += length
 	}
@@ -24,6 +24,30 @@ func getMetadataSum(data []int) (int, int) {
 	return sum, offset
 }
 
+func getMetadataSumPart2(data []int) (int, int) {
+	var sum int
+	var offset int
+	var childSums []int
+	offset += 2
+	for i := 0; i < data[0]; i++ {
+		childSum, length := getMetadataSumPart2(data[offset:])
+		childSums = append(childSums, childSum)
+		offset += length
+	}
+	if data[0] == 0 {
+		for i := 0; i < data[1]; i++ {
+			sum += data[offset+i]
+		}
+	} else {
+		for i := 0; i < data[1]; i++ {
+			if data[offset+i] <= data[0] && data[offset+i] > 0 {
+				sum += childSums[data[offset+i]-1]
+			}
+		}
+	}
+	offset += data[1]
+	return sum, offset
+}
 func main() {
 	file, _ := os.Open("input.txt")
 	scanner := bufio.NewScanner(file)
@@ -42,6 +66,9 @@ func main() {
 		data = append(data, number)
 	}
 
-	metadataSum, _ := getMetadataSum(data)
+	metadataSum, _ := getMetadataSumPart1(data)
+	fmt.Printf("sum => %d\n", metadataSum)
+
+	metadataSum, _ = getMetadataSumPart2(data)
 	fmt.Printf("sum => %d\n", metadataSum)
 }
