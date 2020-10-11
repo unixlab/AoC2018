@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"math"
 	"os"
 	"regexp"
 	"strconv"
@@ -19,6 +18,12 @@ type star struct {
 
 func getMinMaxXY(stars []star) (int, int, int, int) {
 	var minX, maxX, minY, maxY int
+
+	// set unrealistic high defaults
+	minX = 1e6
+	maxX = -1e6
+	minY = 1e6
+	maxY = -1e6
 
 	for _, v := range stars {
 		if v.posX < minX {
@@ -50,9 +55,7 @@ func printStars(stars []star) {
 				line.WriteRune(' ')
 			}
 		}
-		if strings.Index(line.String(), "#") > -1 {
-			fmt.Println(line.String())
-		}
+		fmt.Println(line.String())
 	}
 }
 
@@ -71,10 +74,6 @@ func moveStars(stars []star) []star {
 		stars[k].posY = v.posY + v.velY
 	}
 	return stars
-}
-
-func intAbs(n int) int {
-	return int(math.Abs(float64(n)))
 }
 
 func main() {
@@ -103,10 +102,8 @@ func main() {
 	for i := 0; i < 100000; i++ {
 		stars = moveStars(stars)
 		minX, maxX, minY, maxY := getMinMaxXY(stars)
-		minX = intAbs(minX)
-		minY = intAbs(minY)
 
-		fieldSize := (minX+maxX) * (minY+maxY)
+		fieldSize := (minX*-1+maxX) * (minY*-1+maxY)
 
 		if fieldSize < smallestFieldSize || smallestField == -1 {
 			smallestField = i
@@ -119,5 +116,6 @@ func main() {
 	}
 
 	fmt.Printf("this is the message after %d seconds\n", smallestField+1)
+	fmt.Printf("the field size is %d\n", smallestFieldSize)
 	printStars(initalStars)
 }
